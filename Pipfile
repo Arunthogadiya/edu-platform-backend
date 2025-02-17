@@ -5,14 +5,17 @@ name = "pypi"
 
 [packages]
 flask = "*"
-flask-jwt-extended = "*"
+langchain = "*"
+langchain-ollama = "*"
+openai = "*"
+pillow = "*"
+chromadb = "*"
 python-dotenv = "*"
-sqlalchemy = "*"
-psycopg2-binary = "*"
-bcrypt = "*"
 
 [dev-packages]
+pytest = "*"
+black = "*"
+flake8 = "*"
 
 [requires]
-python_version = "3.12"
-python_full_version = "3.12.9"
+python_version = "3.9"
