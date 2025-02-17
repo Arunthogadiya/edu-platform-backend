@@ -12,9 +12,11 @@ from app.v1.controller.SocialEmotionalDevelopmentTrackerController import social
 from app.v1.controller.DashboardController import dashboard_bp
 from app.config.auth import Auth
 from datetime import timedelta
+from flask_cors import CORS
 
 
 app = Flask(__name__)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Configure your JWT settings
 app.config['JWT_SECRET_KEY'] = 'your_jwt_secret_key'  # Change this to a secure key

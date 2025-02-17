@@ -16,6 +16,7 @@ class Users(Base):
     role = Column(ENUM('parent', 'teacher', 'admin', name='user_role'), nullable=False, default='parent')
     language = Column(String(10), nullable=False, default='en')
     phone = Column(String(20))
+    subject = Column(String(50), nullable=True)
     student_id = Column(Integer, ForeignKey('app.students.student_id'), nullable=True)
     created_at = Column(TIMESTAMP(timezone=True), default=datetime.datetime.now(datetime.timezone.utc))
     updated_at = Column(TIMESTAMP(timezone=True), default=datetime.datetime.now(datetime.timezone.utc), onupdate=datetime.datetime.now(datetime.timezone.utc))

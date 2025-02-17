@@ -81,3 +81,12 @@ class UsersRepository:
             raise e
         finally:
             session.close()
+
+    def get_users_by_role(self, role):
+        """Retrieve users by their role."""
+        session = self.scoped_session_factory()
+        try:
+            logger.info(f"Fetching users with role: {role}")
+            return session.query(Users).filter(Users.role == role).all()
+        finally:
+            session.close()

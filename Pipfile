@@ -10,6 +10,7 @@ python-dotenv = "*"
 sqlalchemy = "*"
 psycopg2-binary = "*"
 bcrypt = "*"
+flask-cors = "*"
 
 [dev-packages]
 

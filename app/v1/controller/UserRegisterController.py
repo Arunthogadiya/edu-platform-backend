@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from app.v1.repository.UsersRepository import UsersRepository
+from app.v1.repository.StudentsRepository import StudentsRepository
 from app.config.postgres_orm_config import scoped_session_factory
 from app.config.logger_config import LogConfig
 from app.config.auth import Auth
@@ -13,6 +14,7 @@ logger = LogConfig.setup_logger(__name__)
 
 user_register_bp = Blueprint('user_register', __name__)
 users_repository = UsersRepository(scoped_session_factory)
+students_repository = StudentsRepository(scoped_session_factory)
 
 class UserRegisterController:
     @staticmethod
@@ -97,3 +99,42 @@ class UserRegisterController:
         except Exception as e:
             logger.error(f"Error refreshing access token: {e}")
             return jsonify({'error': 'An error occurred while refreshing the access token'}), 500
+
+    @staticmethod
+    @user_register_bp.route('/teachers', methods=['GET'])
+    @jwt_required()
+    def get_teachers():
+        """Get all teachers' details."""
+        try:
+            teachers = users_repository.get_users_by_role('teacher')
+            response = [{'id': teacher.id, 'name': teacher.name, 'email': teacher.email, 'role': teacher.role, 'subject': teacher.subject} for teacher in teachers]
+            logger.info("Fetched all teachers' details")
+            return jsonify(response), 200
+        except Exception as e:
+            logger.error(f"Error fetching teachers' details: {e}")
+            return jsonify({'error': 'An error occurred while fetching teachers\' details'}), 500
+
+    @staticmethod
+    @user_register_bp.route('/parents', methods=['GET'])
+    @jwt_required()
+    def get_parents():
+        """Get all parents and their child details."""
+        try:
+            parents = users_repository.get_users_by_role('parent')
+            response = []
+            for parent in parents:
+                student = students_repository.get_student_by_id(parent.student_id)
+                if student:
+                    response.append({
+                        'parent_id': parent.id,
+                        'parent_name': parent.name,
+                        'parent_email': parent.email,
+                        'student_id': student.student_id,
+                        'student_name': student.student_name,
+                        'student_gender': student.gender
+                    })
+            logger.info("Fetched all parents' details")
+            return jsonify(response), 200
+        except Exception as e:
+            logger.error(f"Error fetching parents' details: {e}")
+            return jsonify({'error': 'An error occurred while fetching parents\' details'}), 500
