@@ -12,7 +12,7 @@ class Students(Base):
     student_name = Column(String(255), nullable=False)
     parent_name = Column(String(255), nullable=False)
     parent_phone = Column(String(20))
-    class_ = Column(String(50), nullable=False)
+    class_value = Column(String(50), nullable=False)
     section = Column(String(20))
     date_of_birth = Column(Date)
     gender = Column(String(10))

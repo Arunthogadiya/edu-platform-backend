@@ -30,7 +30,7 @@ class SocialEmotionalDevelopmentTrackerController:
                 'student_id': data['student_id'],
                 'logged_by': user_id,
                 'source': 'school',
-                'behaviour_type': data['behavior_type'],
+                'behaviour_type': data.get('behavior_type', 'General'),
                 'sentiment_score': data['sentiment_score'],
                 'comment': data['comment'],
                 'record_date': datetime.strptime(data['record_date'], '%Y-%m-%d').date()

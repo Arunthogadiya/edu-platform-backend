@@ -14,7 +14,7 @@ class BehaviorRecords(Base):
     student_id = Column(Integer, ForeignKey('app.students.student_id', ondelete='CASCADE'), nullable=False)
     logged_by = Column(Integer, ForeignKey('app.users.id', ondelete='SET NULL'), nullable=True)
     source = Column(behavior_source_enum, nullable=False)
-    behaviour_type = Column(String(255), nullable=False)
+    behaviour_type = Column(String(255), nullable=True)
     sentiment_score = Column(Integer, nullable=True)
     comment = Column(Text, nullable=True)
     record_date = Column(Date, nullable=False)
