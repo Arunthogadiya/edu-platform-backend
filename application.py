@@ -7,6 +7,7 @@ from app.v1.controller.HealthCheckController import (
     health_check_bp,
 )
 from app.v1.controller.UserRegisterController import user_register_bp
+from app.v1.controller.ChatbotController import chatbot_bp
 from app.config.auth import Auth
 from datetime import timedelta
 
@@ -47,6 +48,7 @@ werkzeug_logger.addHandler(handler)
 app.register_blueprint(health_check_bp, url_prefix="/")
 # Register the user register blueprint
 app.register_blueprint(user_register_bp, url_prefix="/edu-platform/v1")
+app.register_blueprint(chatbot_bp)
 
 if __name__ == '__main__':
     debug = os.getenv("FLask_DEBUG", "0") == "1"
