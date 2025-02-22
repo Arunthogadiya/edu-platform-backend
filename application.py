@@ -12,6 +12,8 @@ from app.v1.controller.SocialEmotionalDevelopmentTrackerController import social
 from app.v1.controller.DashboardController import dashboard_bp
 from app.v1.controller.ParentTeacherChatController import parent_teacher_chat_bp
 from app.v1.controller.CommunityPulseController import community_pulse_bp
+from app.v1.controller.StudentsController import students_bp
+from app.v1.controller.ChatbotConversationsController import chatbot_conversations_bp
 from app.config.auth import Auth
 from datetime import timedelta
 from flask_cors import CORS
@@ -59,6 +61,8 @@ app.register_blueprint(talent_future_potential_bp, url_prefix="/edu-platform/v1"
 app.register_blueprint(social_emotional_tracker_bp, url_prefix="/edu-platform/v1")
 app.register_blueprint(parent_teacher_chat_bp, url_prefix="/edu-platform/v1")
 app.register_blueprint(community_pulse_bp, url_prefix="/edu-platform/v1")
+app.register_blueprint(students_bp, url_prefix="/edu-platform/v1")
+app.register_blueprint(chatbot_conversations_bp, url_prefix="/edu-platform/v1")
 
 if __name__ == '__main__':
     debug = os.getenv("FLask_DEBUG", "0") == "1"

@@ -13,8 +13,8 @@ class ChatbotConversationsRepository:
         """Retrieve a chatbot conversation by its ID."""
         session = self.scoped_session_factory()
         try:
-            logger.info(f"Fetching chatbot conversation with ID: {conversation_id}")
-            return session.query(ChatbotConversations).filter(ChatbotConversations.id == conversation_id).one_or_none()
+            logger.info(f"Fetching conversation with ID: {conversation_id}")
+            return session.query(ChatbotConversations).filter(ChatbotConversations.conversation_id == conversation_id).one_or_none()
         finally:
             session.close()
 
@@ -27,6 +27,18 @@ class ChatbotConversationsRepository:
         finally:
             session.close()
 
+    def get_last_n_conversations(self, user_id, conversation_id, n):
+        """Retrieve the last N chatbot conversations for a user and conversation ID."""
+        session = self.scoped_session_factory()
+        try:
+            logger.info(f"Fetching last {n} conversations for user ID: {user_id} and conversation ID: {conversation_id}")
+            return session.query(ChatbotConversations).filter(
+                ChatbotConversations.user_id == user_id,
+                ChatbotConversations.conversation_id == conversation_id
+            ).order_by(ChatbotConversations.created_at.desc()).limit(n).all()
+        finally:
+            session.close()
+
     def create_conversation(self, conversation_data):
         """Create a new chatbot conversation."""
         session = self.scoped_session_factory()
@@ -34,11 +46,12 @@ class ChatbotConversationsRepository:
             conversation = ChatbotConversations(**conversation_data)
             session.add(conversation)
             session.commit()
-            logger.info(f"Created chatbot conversation for user ID: {conversation.user_id}")
+            session.refresh(conversation)
+            logger.info(f"Created conversation with ID: {conversation.conversation_id}")
             return conversation
         except Exception as e:
             session.rollback()
-            logger.error(f"Error creating chatbot conversation: {e}")
+            logger.error(f"Error creating conversation: {e}")
             raise e
         finally:
             session.close()

@@ -35,3 +35,25 @@ class StudentsRepository:
             return session.query(Students).filter(Students.student_id == student_id).one_or_none()
         finally:
             session.close()
+
+    def create_student(self, student_data):
+        """Create a new student."""
+        session = self.scoped_session_factory()
+        try:
+            existing_student = session.query(Students).filter(Students.student_id == student_data['student_id']).one_or_none()
+            if existing_student:
+                logger.error(f"Student with ID: {student_data['student_id']} already exists")
+                raise ValueError(f"Student with ID: {student_data['student_id']} already exists")
+
+            student = Students(**student_data)
+            session.add(student)
+            session.commit()
+            # session.refresh(student)
+            # logger.info(f"Created student with ID: {student.student_id}")
+            # return student
+        except Exception as e:
+            session.rollback()
+            logger.error(f"Error creating student: {e}")
+            raise e
+        finally:
+            session.close()
