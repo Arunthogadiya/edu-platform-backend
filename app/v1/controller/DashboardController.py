@@ -6,6 +6,7 @@ from app.v1.repository.AttendanceRepository import AttendanceRepository
 from app.v1.repository.ActivitiesRepository import ActivitiesRepository
 from app.v1.repository.BehaviorRecordsRepository import BehaviorRecordsRepository
 from app.v1.repository.StudentsRepository import StudentsRepository
+from app.v1.repository.TimeTableRepository import TimeTableRepository
 from app.config.postgres_orm_config import scoped_session_factory
 from app.config.logger_config import LogConfig
 from datetime import datetime
@@ -20,6 +21,7 @@ attendance_repository = AttendanceRepository(scoped_session_factory)
 activities_repository = ActivitiesRepository(scoped_session_factory)
 behavior_records_repository = BehaviorRecordsRepository(scoped_session_factory)
 students_repository = StudentsRepository(scoped_session_factory)
+time_table_repository = TimeTableRepository(scoped_session_factory)
 
 class DashboardController:
     @staticmethod
@@ -150,7 +152,11 @@ class DashboardController:
                         continue
                     if year and record.attendance_date.year != int(year):
                         continue
-                    student_data['attendance'].append({'date': record.attendance_date, 'status': record.status})
+                    student_data['attendance'].append({
+                        'date': record.attendance_date,
+                        'status': record.status,
+                        'notes': record.notes
+                        })
 
                 response['students'].append(student_data)
 
@@ -257,7 +263,7 @@ class DashboardController:
             return jsonify({'error': 'An error occurred while posting the activity record'}), 500
 
     @staticmethod
-    @dashboard_bp.route('/api/dashboard/behavior', methods=['GET'])
+    @dashboard_bp.route('/api/dashboard/behaviour', methods=['GET'])
     @jwt_required()
     def get_behavior():
         """Return behavioral sentiment analysis data."""
@@ -311,3 +317,104 @@ class DashboardController:
         except Exception as e:
             logger.error(f"Error retrieving behavior records: {e}")
             return jsonify({'error': 'An error occurred while retrieving behavior records'}), 500
+
+    @staticmethod
+    @dashboard_bp.route('/api/dashboard/timetable', methods=['POST'])
+    @jwt_required()
+    def create_time_table():
+        """Create a new time table entry."""
+        data = request.json
+        try:
+            user_id = get_jwt_identity()
+            user = users_repository.get_user_by_id(user_id)
+            if not user or user.role != 'teacher':
+                return jsonify({'error': 'Unauthorized access'}), 403
+
+            time_table_data = {
+                'class_value': data['class_value'],
+                'section': data['section'],
+                'subject': data['subject'],
+                'teacher_id': user_id,
+                'day_of_week': data['day_of_week'],
+                'start_time': datetime.strptime(data['start_time'], '%Y-%m-%dT%H:%M:%S'),
+                'end_time': datetime.strptime(data['end_time'], '%Y-%m-%dT%H:%M:%S')
+            }
+
+            time_table = time_table_repository.create_time_table(time_table_data)
+            return jsonify({'time_table_id': time_table.id, 'message': 'Time table entry created successfully.'}), 201
+        except KeyError as e:
+            logger.error(f"Missing required field: {e}")
+            return jsonify({'error': f"Missing required field: {e}"}), 400
+        except Exception as e:
+            logger.error(f"Error creating time table entry: {e}")
+            return jsonify({'error': 'An error occurred while creating the time table entry'}), 500
+
+    @staticmethod
+    @dashboard_bp.route('/api/dashboard/timetable/<int:time_table_id>', methods=['PUT'])
+    @jwt_required()
+    def update_time_table(time_table_id):
+        """Update an existing time table entry."""
+        data = request.json
+        try:
+            user_id = get_jwt_identity()
+            user = users_repository.get_user_by_id(user_id)
+            if not user or user.role != 'teacher':
+                return jsonify({'error': 'Unauthorized access'}), 403
+
+            time_table_data = {
+                'class_value': data.get('class_value'),
+                'section': data.get('section'),
+                'subject': data.get('subject'),
+                'day_of_week': data.get('day_of_week'),
+                'start_time': datetime.strptime(data['start_time'], '%Y-%m-%dT%H:%M:%S'),
+                'end_time': datetime.strptime(data['end_time'], '%Y-%m-%dT%H:%M:%S')
+            }
+
+            time_table = time_table_repository.update_time_table(time_table_id, time_table_data)
+            if time_table:
+                return jsonify({'time_table_id': time_table.id, 'message': 'Time table entry updated successfully.'}), 200
+            return jsonify({'error': 'Time table entry not found'}), 404
+        except Exception as e:
+            logger.error(f"Error updating time table entry: {e}")
+            return jsonify({'error': 'An error occurred while updating the time table entry'}), 500
+
+    @staticmethod
+    @dashboard_bp.route('/api/dashboard/timetable', methods=['GET'])
+    @jwt_required()
+    def get_time_table():
+        """Retrieve time table entries."""
+        user_id = get_jwt_identity()
+        try:
+            user = users_repository.get_user_by_id(user_id)
+            if not user or user.role not in ['parent', 'teacher']:
+                return jsonify({'error': 'Unauthorized access'}), 403
+
+            if user.role == 'parent':
+                student_id = user.student_id
+                if not student_id:
+                    return jsonify({'error': 'Student ID not found'}), 404
+                student = students_repository.get_student_by_id(student_id)
+                class_value = student.class_value
+                section = student.section
+            else:
+                class_value = request.args.get('class_value')
+                section = request.args.get('section')
+                if not class_value or not section:
+                    return jsonify({'error': 'class_value and section are required for teachers'}), 400
+
+            time_table_entries = time_table_repository.get_time_table_by_class_and_section(class_value, section)
+            response = [{
+                'id': entry.id,
+                'class_value': entry.class_value,
+                'section': entry.section,
+                'subject': entry.subject,
+                'teacher_id': entry.teacher_id,
+                'day_of_week': entry.day_of_week,
+                'start_time': entry.start_time,
+                'end_time': entry.end_time
+            } for entry in time_table_entries]
+
+            return jsonify(response), 200
+        except Exception as e:
+            logger.error(f"Error retrieving time table entries: {e}")
+            return jsonify({'error': 'An error occurred while retrieving time table entries'}), 500

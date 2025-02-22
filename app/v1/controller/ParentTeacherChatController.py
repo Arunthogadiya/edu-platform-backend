@@ -25,9 +25,16 @@ class ParentTeacherChatController:
             if not user or user.role not in ['parent', 'teacher']:
                 return jsonify({'error': 'Unauthorized access'}), 403
 
+            if user.role == 'parent':
+                parent_id = user.id
+                teacher_id = data['teacher_id']
+            else:
+                parent_id = data['parent_id']
+                teacher_id = user.id
+
             chat_data = {
-                'teacher_id': data['teacher_id'],
-                'parent_id': data['parent_id'],
+                'teacher_id': teacher_id,
+                'parent_id': parent_id,
                 'sender': user.role,
                 'message': data['message']
             }
