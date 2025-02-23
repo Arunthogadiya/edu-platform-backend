@@ -45,7 +45,7 @@ class ChatbotConversationsController:
             conversation_id = data.get('conversation_id')
 
             if conversation_id:
-                previous_messages = chatbot_conversations_repository.get_last_n_conversations(user_id, conversation_id, 5)
+                previous_messages = chatbot_conversations_repository.get_last_n_conversations(user_id, conversation_id, 1)
                 messages = [{'role': 'user', 'content': query}]
                 for message in previous_messages:
                     messages.insert(0, {'role': 'assistant', 'content': message.response})
@@ -144,9 +144,9 @@ class ChatbotConversationsController:
             # Call the external chatbot API for the final response
             final_answer_prompt = FINAL_ANSWER_PROMPT.format(query=query, data_response=data_response)
             if len(messages) > 1:
-                messages.append({'role': 'assistant', 'content': final_answer_prompt})
+                messages[-1] = {'role': 'user', 'content': final_answer_prompt}
             else:
-                messages = [{'role': 'user', 'content': query}, {'role': 'assistant', 'content': final_answer_prompt}]
+                messages[0] = {'role': 'user', 'content': final_answer_prompt}
             response = requests.post(
                 'https://api.groq.com/openai/v1/chat/completions',
                 headers={

@@ -14,6 +14,8 @@ from app.v1.controller.ParentTeacherChatController import parent_teacher_chat_bp
 from app.v1.controller.CommunityPulseController import community_pulse_bp
 from app.v1.controller.StudentsController import students_bp
 from app.v1.controller.ChatbotConversationsController import chatbot_conversations_bp
+from app.v1.controller.EventAssessmentController import event_assessment_bp
+from app.v1.controller.AudioResourceController import audio_resource_bp
 from app.config.auth import Auth
 from datetime import timedelta
 from flask_cors import CORS
@@ -63,6 +65,8 @@ app.register_blueprint(parent_teacher_chat_bp, url_prefix="/edu-platform/v1")
 app.register_blueprint(community_pulse_bp, url_prefix="/edu-platform/v1")
 app.register_blueprint(students_bp, url_prefix="/edu-platform/v1")
 app.register_blueprint(chatbot_conversations_bp, url_prefix="/edu-platform/v1")
+app.register_blueprint(event_assessment_bp, url_prefix="/edu-platform/v1")
+app.register_blueprint(audio_resource_bp, url_prefix="/edu-platform/v1")
 
 if __name__ == '__main__':
     debug = os.getenv("FLask_DEBUG", "0") == "1"
